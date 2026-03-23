@@ -1,36 +1,36 @@
 # OpenClaw Session Viewer
 
-[English](./README.en.md) | [简体中文](./README.zh-CN.md)
+[English](./README.md) | [简体中文](./README.zh-CN.md)
 
-轻量的本地 Web 工具，用于查看 `.openclaw` 下 agent 的 session 存储文件。
+A lightweight local web tool for browsing agent session files under `.openclaw`.
 
-## 功能
+## Features
 
-- 左侧按 `agent -> sessions 文件` 自动树形展示
-- 右侧展示 session 的结构化树视图（可折叠）
-- 同时提供原始文本视图，便于精准核对
-- 支持解析 `.jsonl/.txt/.log` 为 JSONL 结构并统计解析错误
+- Automatically renders a tree in the left panel: `agent -> session files`
+- Shows a structured, collapsible tree view for session content on the right
+- Provides a raw text view for precise inspection
+- Parses `.jsonl/.txt/.log` as JSONL entries and reports parse errors
 
-## 启动
+## Run
 
 ```bash
 cd /home/jason/openclaw-test/sessionviewer
 npm start
 ```
 
-或直接使用脚本：
+Or run the startup script directly:
 
 ```bash
 /home/jason/openclaw-test/sessionviewer/start.sh
 ```
 
-`start.sh` 固定使用 `4588` 端口；若端口被占用，会先尝试结束占用该端口的进程，再启动服务。
+`start.sh` uses port `4588` by default. If the port is occupied, it first tries to stop the process using that port and then starts the service.
 
-默认地址：
+Default URL:
 
 - <http://localhost:4588>
 
-## 可选环境变量
+## Optional Environment Variables
 
-- `PORT`：自定义端口
-- `OPENCLAW_DIR`：自定义 `.openclaw` 根目录路径（默认 `../.openclaw`）
+- `PORT`: custom port
+- `OPENCLAW_DIR`: custom `.openclaw` root path (default: `../.openclaw`)
