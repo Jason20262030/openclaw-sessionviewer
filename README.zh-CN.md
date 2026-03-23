@@ -2,7 +2,7 @@
 
 [English](./README.en.md) | [简体中文](./README.zh-CN.md)
 
-轻量的本地 Web 工具，用于查看 `.openclaw` 下 agent 的 session 存储文件。
+一个轻量的本地 Web 工具，用于查看 `.openclaw` 下 agent 的 session 存储文件。
 
 ## 功能
 
