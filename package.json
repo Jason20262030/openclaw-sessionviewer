@@ -1,0 +1,10 @@
+{
+  "name": "openclaw-sessionviewer",
+  "version": "1.0.0",
+  "description": "Web viewer for .openclaw session files",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  }
+}

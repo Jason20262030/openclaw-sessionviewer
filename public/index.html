@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenClaw Session Viewer</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div class="sidebar-header">
+            <h1>Session Viewer</h1>
+            <button id="refreshBtn" class="btn">刷新</button>
+          </div>
+          <p id="rootPath" class="subtle"></p>
+        </div>
+        <div id="sessionTree" class="session-tree sidebar-scroll"></div>
+      </aside>
+
+      <main class="content">
+        <header class="content-header">
+          <div>
+            <h2 id="contentTitle">请选择左侧 Session 文件</h2>
+            <p id="contentMeta" class="subtle"></p>
+          </div>
+          <div class="view-mode">
+            <label class="font-size-control" for="viewSelect">
+              视图
+              <select id="viewSelect">
+                <option value="session" selected>Session视图</option>
+                <option value="thinking">Thinking视图</option>
+                <option value="tree">树形视图</option>
+                <option value="raw">原始文本</option>
+              </select>
+            </label>
+            <label class="font-size-control" for="fontSizeSelect">
+              字体
+              <select id="fontSizeSelect">
+                <option value="small">小</option>
+                <option value="medium" selected>中</option>
+                <option value="large">大</option>
+              </select>
+            </label>
+          </div>
+        </header>
+
+        <section id="notice" class="notice">
+          左侧自动按 agent 分组展示 sessions 文件，点击后可在右侧查看结构化内容和原始数据。
+        </section>
+
+        <section id="sessionView" class="pane"></section>
+        <section id="thinkingView" class="pane hidden"></section>
+        <section id="treeView" class="pane hidden"></section>
+        <section id="rawView" class="pane hidden">
+          <div id="rawText"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
