@@ -33,4 +33,4 @@ npm start
 ## 可选环境变量
 
 - `PORT`：自定义端口
-- `OPENCLAW_DIR`：自定义 `.openclaw` 根目录路径（默认 `../.openclaw`）
+- `OPENCLAW_DIR`：自定义 `.openclaw` 根目录路径（默认 `~/.openclaw`）

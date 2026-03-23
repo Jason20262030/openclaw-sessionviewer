@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 PORT="4588"
-OPENCLAW_DIR="${OPENCLAW_DIR:-$SCRIPT_DIR/../.openclaw}"
+OPENCLAW_DIR="${OPENCLAW_DIR:-$HOME/.openclaw}"
 
 is_port_free() {
   local target_port="$1"

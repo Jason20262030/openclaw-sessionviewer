@@ -1,12 +1,13 @@
 const http = require("http");
 const fs = require("fs/promises");
+const os = require("os");
 const path = require("path");
 const { URL } = require("url");
 
 const PORT = Number(process.env.PORT || 4588);
 const WEB_ROOT = path.join(__dirname, "public");
 const OPENCLAW_DIR =
-  process.env.OPENCLAW_DIR || path.resolve(__dirname, "..", ".openclaw");
+  process.env.OPENCLAW_DIR || path.join(os.homedir(), ".openclaw");
 const AGENTS_DIR = path.join(OPENCLAW_DIR, "agents");
 
 const MIME_TYPES = {

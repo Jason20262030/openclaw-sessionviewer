@@ -33,4 +33,4 @@ Default URL:
 ## Optional Environment Variables
 
 - `PORT`: custom port
-- `OPENCLAW_DIR`: custom `.openclaw` root path (default: `../.openclaw`)
+- `OPENCLAW_DIR`: custom `.openclaw` root path (default: `~/.openclaw`)
