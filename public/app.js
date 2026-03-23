@@ -6,14 +6,112 @@ const state = {
   messageIdToLine: {},
   activeView: "session",
   fontSize: "medium",
+  language: "en",
   messageJsonView: {},
 };
 
 const FONT_SIZE_KEY = "sessionviewer-font-size";
+const LANGUAGE_KEY = "sessionviewer-language";
 const FONT_SIZE_MAP = {
   small: { size: "12px", lineHeight: "1.6" },
   medium: { size: "14px", lineHeight: "1.7" },
   large: { size: "16px", lineHeight: "1.8" },
+};
+
+const I18N = {
+  en: {
+    languageLabel: "Language",
+    refresh: "Refresh",
+    selectSessionTitle: "Select a session file from the left panel",
+    viewLabel: "View",
+    viewSession: "Session View",
+    viewThinking: "Thinking View",
+    viewTree: "Tree View",
+    viewRaw: "Raw Text",
+    fontLabel: "Font",
+    fontSmall: "Small",
+    fontMedium: "Medium",
+    fontLarge: "Large",
+    noticeDefault:
+      "Session files are grouped by agent in the left panel. Click one to inspect structured content and raw text on the right.",
+    jsonText: "[JSON Text]",
+    arrayLabel: "[Array]",
+    objectLabel: "{Object}",
+    emptyArray: "[empty]",
+    emptyObject: "{empty}",
+    parseOnlyRaw: "This file cannot be parsed as JSON/JSONL. Switch to Raw Text to view it.",
+    messageDependencyOrder: "message (dependency order)",
+    noMessageContent: "No message content available.",
+    noMatchingContent: "No matched user/assistant/toolResult content.",
+    backToMessage: "Back to related message",
+    noAgentSessions: "No agent sessions directory detected.",
+    emptySessionsDir: "sessions directory is empty",
+    lineCount: "{n} lines",
+    parseErrors: "errors {n}",
+    updatedAt: "Updated: {v}",
+    size: "Size: {v}",
+    lines: "Lines: {v}",
+    parseNotice: "Note: this file contains {n} non-JSON lines, so only raw text reading is supported.",
+    loadFailed: "Load failed",
+    loading: "Loading...",
+    readFailed: "Read failed",
+    readSessionFailed: "Cannot read session: {msg}",
+    scanning: "Scanning .openclaw...",
+    loadFailedWithReason: "Load failed: {msg}",
+    readDirFailed: "Failed to read directory",
+    scanPath: "Scan path: {path}",
+    toggleJsonText: "Toggle JSON text/structure",
+    jumpToLine: "Jump to raw line {line}",
+    plainText: "Text",
+    jsonMode: "JSON",
+    invalidJsonRawOnly: "This file cannot be parsed as JSON/JSONL. Switch to Raw Text to view it.",
+  },
+  "zh-CN": {
+    languageLabel: "语言",
+    refresh: "刷新",
+    selectSessionTitle: "请选择左侧 Session 文件",
+    viewLabel: "视图",
+    viewSession: "Session视图",
+    viewThinking: "Thinking视图",
+    viewTree: "树形视图",
+    viewRaw: "原始文本",
+    fontLabel: "字体",
+    fontSmall: "小",
+    fontMedium: "中",
+    fontLarge: "大",
+    noticeDefault: "左侧自动按 agent 分组展示 sessions 文件，点击后可在右侧查看结构化内容和原始数据。",
+    jsonText: "[JSON文本]",
+    arrayLabel: "[数组]",
+    objectLabel: "{对象}",
+    emptyArray: "[空]",
+    emptyObject: "{空}",
+    parseOnlyRaw: "该文件无法解析为 JSON/JSONL，请切换到“原始文本”查看。",
+    messageDependencyOrder: "message（依赖顺序）",
+    noMessageContent: "没有可展示的 message 内容。",
+    noMatchingContent: "没有匹配到 user/assistant/toolResult 的目标内容。",
+    backToMessage: "返回对应 message",
+    noAgentSessions: "没有检测到 agent sessions 目录。",
+    emptySessionsDir: "sessions 目录为空",
+    lineCount: "{n} 行",
+    parseErrors: "错误 {n}",
+    updatedAt: "更新时间: {v}",
+    size: "大小: {v}",
+    lines: "行数: {v}",
+    parseNotice: "提示：该文件包含 {n} 行非 JSON 内容，因此仅支持原始文本直读。",
+    loadFailed: "加载失败",
+    loading: "加载中...",
+    readFailed: "读取失败",
+    readSessionFailed: "无法读取 session：{msg}",
+    scanning: "正在扫描 .openclaw...",
+    loadFailedWithReason: "加载失败：{msg}",
+    readDirFailed: "读取目录失败",
+    scanPath: "扫描路径: {path}",
+    toggleJsonText: "切换 JSON 文本/结构",
+    jumpToLine: "跳转到原文第 {line} 行",
+    plainText: "文本",
+    jsonMode: "JSON",
+    invalidJsonRawOnly: "该文件无法解析为 JSON/JSONL，请切换到“原始文本”查看。",
+  },
 };
 
 const el = {
@@ -30,7 +128,72 @@ const el = {
   rawText: document.getElementById("rawText"),
   viewSelect: document.getElementById("viewSelect"),
   fontSizeSelect: document.getElementById("fontSizeSelect"),
+  languageSelect: document.getElementById("languageSelect"),
+  languageLabel: document.getElementById("languageLabel"),
+  viewLabel: document.getElementById("viewLabel"),
+  viewOptionSession: document.getElementById("viewOptionSession"),
+  viewOptionThinking: document.getElementById("viewOptionThinking"),
+  viewOptionTree: document.getElementById("viewOptionTree"),
+  viewOptionRaw: document.getElementById("viewOptionRaw"),
+  fontSizeLabel: document.getElementById("fontSizeLabel"),
+  fontSizeOptionSmall: document.getElementById("fontSizeOptionSmall"),
+  fontSizeOptionMedium: document.getElementById("fontSizeOptionMedium"),
+  fontSizeOptionLarge: document.getElementById("fontSizeOptionLarge"),
 };
+
+function t(key, vars = {}) {
+  const dict = I18N[state.language] || I18N.en;
+  const fallback = I18N.en[key] || key;
+  const template = dict[key] || fallback;
+  return String(template).replace(/\{(\w+)\}/g, (_, name) => (vars[name] == null ? "" : String(vars[name])));
+}
+
+function getLocale() {
+  return state.language === "zh-CN" ? "zh-CN" : "en-US";
+}
+
+function detectDefaultLanguage() {
+  const saved = localStorage.getItem(LANGUAGE_KEY);
+  if (saved === "en" || saved === "zh-CN") return saved;
+  const nav = String(navigator.language || "").toLowerCase();
+  return nav.startsWith("zh") ? "zh-CN" : "en";
+}
+
+function applyLanguage(lang) {
+  state.language = lang === "zh-CN" ? "zh-CN" : "en";
+  if (el.languageSelect.value !== state.language) {
+    el.languageSelect.value = state.language;
+  }
+  localStorage.setItem(LANGUAGE_KEY, state.language);
+  document.documentElement.lang = state.language;
+
+  el.languageLabel.textContent = t("languageLabel");
+  el.refreshBtn.textContent = t("refresh");
+  el.viewLabel.textContent = t("viewLabel");
+  el.viewOptionSession.textContent = t("viewSession");
+  el.viewOptionThinking.textContent = t("viewThinking");
+  el.viewOptionTree.textContent = t("viewTree");
+  el.viewOptionRaw.textContent = t("viewRaw");
+  el.fontSizeLabel.textContent = t("fontLabel");
+  el.fontSizeOptionSmall.textContent = t("fontSmall");
+  el.fontSizeOptionMedium.textContent = t("fontMedium");
+  el.fontSizeOptionLarge.textContent = t("fontLarge");
+
+  if (state.currentSessionData) {
+    renderSession(state.currentSessionData);
+  } else if (!state.selected) {
+    el.contentTitle.textContent = t("selectSessionTitle");
+    el.notice.textContent = t("noticeDefault");
+  }
+  if (state.tree) {
+    el.rootPath.textContent = t("scanPath", { path: state.tree.openclawDir });
+    el.sessionTree.innerHTML = "";
+    el.sessionTree.appendChild(buildSidebar(state.tree));
+    if (state.selected) {
+      setSelectedButton(state.selected.agent, state.selected.file);
+    }
+  }
+}
 
 function escapeHtml(value) {
   return String(value)
@@ -101,7 +264,7 @@ function renderJsonValue(key, value, depth = 0, options = {}) {
           `;
         }
         return `
-          <div class="json-entry">${keyHtml}<span class="json-type">[JSON文本]</span></div>
+          <div class="json-entry">${keyHtml}<span class="json-type">${t("jsonText")}</span></div>
           <pre class="json-fenced-area raw">${escapeHtml(value)}</pre>
         `;
       }
@@ -116,8 +279,8 @@ function renderJsonValue(key, value, depth = 0, options = {}) {
       .join("");
     return `
       <details class="json-collapsible"${open}>
-        <summary class="json-entry">${keyHtml}[Array] <span class="json-type">(${value.length})</span></summary>
-        <div class="json-node">${itemsHtml || '<div class="json-entry">[empty]</div>'}</div>
+        <summary class="json-entry">${keyHtml}${t("arrayLabel")} <span class="json-type">(${value.length})</span></summary>
+        <div class="json-node">${itemsHtml || `<div class="json-entry">${t("emptyArray")}</div>`}</div>
       </details>
     `;
   }
@@ -129,8 +292,8 @@ function renderJsonValue(key, value, depth = 0, options = {}) {
     .join("");
   return `
     <details class="json-collapsible"${open}>
-      <summary class="json-entry">${keyHtml}{Object} <span class="json-type">(${entries.length})</span></summary>
-      <div class="json-node">${childrenHtml || '<div class="json-entry">{empty}</div>'}</div>
+      <summary class="json-entry">${keyHtml}${t("objectLabel")} <span class="json-type">(${entries.length})</span></summary>
+      <div class="json-node">${childrenHtml || `<div class="json-entry">${t("emptyObject")}</div>`}</div>
     </details>
   `;
 }
@@ -204,7 +367,7 @@ function renderNodeFields(nodeValue, options = {}) {
     return renderJsonValue(null, nodeValue, 0);
   }
   const entries = Object.entries(nodeValue).filter(([fieldKey]) => !omitKeys.has(fieldKey));
-  if (!entries.length) return '<div class="json-entry">{empty}</div>';
+  if (!entries.length) return `<div class="json-entry">${t("emptyObject")}</div>`;
   return entries
     .map(([fieldKey, fieldValue]) => {
       const messageClass = fieldKey === "message" ? " message-content-area" : "";
@@ -299,10 +462,12 @@ function renderMessageNode(wrapper) {
   const label = `message · ${id} -> ${parentId}, ${timestamp}`;
   const fenced = parseFencedJsonFromMessage(node.message);
   const jsonToggle = fenced.hasAny
-    ? `<button class="jump-line-btn json-toggle-btn" data-message-id="${escapeHtml(id)}" title="切换 JSON 文本/结构">${state.messageJsonView[id] ? "文本" : "JSON"}</button>`
+    ? `<button class="jump-line-btn json-toggle-btn" data-message-id="${escapeHtml(id)}" title="${escapeHtml(t("toggleJsonText"))}">${state.messageJsonView[id] ? t("plainText") : t("jsonMode")}</button>`
     : "";
   const jumpBtn = Number.isFinite(wrapper.line)
-    ? `<button class="jump-line-btn" data-line="${wrapper.line}" data-message-id="${escapeHtml(id)}" title="跳转到原文第 ${wrapper.line} 行">↗</button>`
+    ? `<button class="jump-line-btn" data-line="${wrapper.line}" data-message-id="${escapeHtml(id)}" title="${escapeHtml(
+        t("jumpToLine", { line: wrapper.line }),
+      )}">↗</button>`
     : "";
   const actionHtml = `<span class="message-node-actions">${jsonToggle}${jumpBtn}</span>`;
   return renderTypedNode(label, node, "", {
@@ -344,7 +509,7 @@ function parseFencedJsonFromMessage(messageObject) {
 function renderSessionView(parsedEntries, structuredContent) {
   if (!parsedEntries.length) {
     if (structuredContent === undefined) {
-      return `<div class="json-entry">该文件无法解析为 JSON/JSONL，请切换到“原始文本”查看。</div>`;
+      return `<div class="json-entry">${t("invalidJsonRawOnly")}</div>`;
     }
     return renderJsonValue(null, structuredContent, 0);
   }
@@ -377,7 +542,7 @@ function renderSessionView(parsedEntries, structuredContent) {
     blocks.push(`
       <details class="session-node" open>
         <summary class="json-entry">
-          <span class="session-node-title">message（依赖顺序）</span>
+          <span class="session-node-title">${t("messageDependencyOrder")}</span>
         </summary>
         <div class="session-node-body">
           ${messageListHtml}
@@ -390,7 +555,7 @@ function renderSessionView(parsedEntries, structuredContent) {
     blocks.push(renderTypedNode(`entry ${idx + 1}`, entry.value));
   });
 
-  return blocks.join("") || '<div class="json-entry">[empty]</div>';
+  return blocks.join("") || `<div class="json-entry">${t("emptyArray")}</div>`;
 }
 
 function collectRoleContents(role, message) {
@@ -421,7 +586,7 @@ function collectRoleContents(role, message) {
 function renderThinkingView(parsedEntries) {
   const messageEntries = parsedEntries.filter((entry) => isObject(entry.value) && entry.value.type === "message");
   if (!messageEntries.length) {
-    return '<div class="json-entry">没有可展示的 message 内容。</div>';
+    return `<div class="json-entry">${t("noMessageContent")}</div>`;
   }
 
   const blocks = [];
@@ -464,7 +629,7 @@ function renderThinkingView(parsedEntries) {
     }
   }
 
-  return blocks.join("") || '<div class="json-entry">没有匹配到 user/assistant/toolResult 的目标内容。</div>';
+  return blocks.join("") || `<div class="json-entry">${t("noMatchingContent")}</div>`;
 }
 
 function renderRawText(rawText) {
@@ -477,7 +642,9 @@ function renderRawText(rawText) {
           <span class="raw-line-content">${escapeHtml(line || " ")}</span>
           ${
             state.lineToMessageId[index + 1]
-              ? `<button class="raw-back-btn" data-message-id="${escapeHtml(state.lineToMessageId[index + 1])}" title="返回对应 message">↩</button>`
+              ? `<button class="raw-back-btn" data-message-id="${escapeHtml(state.lineToMessageId[index + 1])}" title="${escapeHtml(
+                  t("backToMessage"),
+                )}">↩</button>`
               : ""
           }
         </div>
@@ -520,7 +687,7 @@ function buildSidebar(tree) {
   if (!tree.agents.length) {
     const empty = document.createElement("p");
     empty.className = "subtle";
-    empty.textContent = "没有检测到 agent sessions 目录。";
+    empty.textContent = t("noAgentSessions");
     fragment.appendChild(empty);
     return fragment;
   }
@@ -539,7 +706,7 @@ function buildSidebar(tree) {
     if (!agentInfo.sessions.length) {
       const empty = document.createElement("p");
       empty.className = "subtle";
-      empty.textContent = "sessions 目录为空";
+      empty.textContent = t("emptySessionsDir");
       fileList.appendChild(empty);
     } else {
       for (const session of agentInfo.sessions) {
@@ -552,9 +719,13 @@ function buildSidebar(tree) {
         const lineCount = Number.isFinite(session.lineCount) ? session.lineCount : "-";
         const parseErrorCount = Number.isFinite(session.parseErrorCount) ? session.parseErrorCount : "-";
         const hasParseError = Number(parseErrorCount) > 0;
+        const metaDate = new Date(session.updatedAt).toLocaleString(getLocale());
         button.innerHTML = `
           <div class="name">${escapeHtml(displayName)}</div>
-          <div class="meta">${lineCount} 行 · <span class="${hasParseError ? "meta-error" : ""}">错误 ${parseErrorCount}</span> · ${formatBytes(session.size)} · ${new Date(session.updatedAt).toLocaleString()}</div>
+          <div class="meta">${t("lineCount", { n: lineCount })} · <span class="${hasParseError ? "meta-error" : ""}">${t(
+            "parseErrors",
+            { n: parseErrorCount },
+          )}</span> · ${formatBytes(session.size)} · ${metaDate}</div>
         `;
 
         button.addEventListener("click", () => selectSession(agentInfo.agent, session.relativePath));
@@ -589,7 +760,10 @@ function renderSession(data) {
     state.messageIdToLine[value.id] = entry.line;
   });
   el.contentTitle.textContent = `${meta.agent} / ${meta.relativePath}`;
-  el.contentMeta.textContent = `更新时间: ${new Date(meta.updatedAt).toLocaleString()} · 大小: ${formatBytes(meta.size)} · 行数: ${meta.lineCount}`;
+  const updatedText = t("updatedAt", { v: new Date(meta.updatedAt).toLocaleString(getLocale()) });
+  const sizeText = t("size", { v: formatBytes(meta.size) });
+  const linesText = t("lines", { v: meta.lineCount });
+  el.contentMeta.textContent = `${updatedText} · ${sizeText} · ${linesText}`;
   el.notice.classList.add("hidden");
 
   const structuredContent = buildStructuredContent(parsedEntries, rawText || "");
@@ -597,7 +771,7 @@ function renderSession(data) {
   wrapper.insertAdjacentHTML("beforeend", renderSessionView(parsedEntries, structuredContent));
   if (structuredContent === undefined && parseErrors.length > 0) {
     el.notice.classList.remove("hidden");
-    el.notice.textContent = `提示：该文件包含 ${parseErrors.length} 行非 JSON 内容，因此仅支持原始文本直读。`;
+    el.notice.textContent = t("parseNotice", { n: parseErrors.length });
   }
   el.sessionView.innerHTML = "";
   el.sessionView.appendChild(wrapper);
@@ -609,7 +783,7 @@ function renderSession(data) {
 
   const treeWrapper = document.createElement("div");
   if (structuredContent === undefined) {
-    treeWrapper.innerHTML = `<div class="json-entry">该文件无法解析为 JSON/JSONL，请切换到“原始文本”查看。</div>`;
+    treeWrapper.innerHTML = `<div class="json-entry">${t("parseOnlyRaw")}</div>`;
   } else {
     treeWrapper.insertAdjacentHTML("beforeend", renderJsonValue(null, structuredContent, 0));
   }
@@ -621,7 +795,7 @@ function renderSession(data) {
 
 function renderError(message) {
   state.currentSessionData = null;
-  el.contentTitle.textContent = "加载失败";
+  el.contentTitle.textContent = t("loadFailed");
   el.contentMeta.textContent = "";
   el.notice.classList.remove("hidden");
   el.notice.textContent = message;
@@ -634,7 +808,7 @@ function renderError(message) {
 async function selectSession(agent, file) {
   state.selected = { agent, file };
   setSelectedButton(agent, file);
-  el.contentTitle.textContent = "加载中...";
+  el.contentTitle.textContent = t("loading");
   el.contentMeta.textContent = `${agent} / ${file}`;
   el.sessionView.innerHTML = "";
   el.thinkingView.innerHTML = "";
@@ -644,28 +818,28 @@ async function selectSession(agent, file) {
     const res = await fetch(`/api/session?agent=${encodeURIComponent(agent)}&file=${encodeURIComponent(file)}`);
     const data = await res.json();
     if (!res.ok) {
-      throw new Error(data.error || "读取失败");
+      throw new Error(data.error || t("readFailed"));
     }
     renderSession(data);
   } catch (error) {
-    renderError(`无法读取 session：${error.message || error}`);
+    renderError(t("readSessionFailed", { msg: error.message || error }));
   }
 }
 
 async function loadTree() {
-  el.sessionTree.innerHTML = `<p class="subtle">正在扫描 .openclaw...</p>`;
+  el.sessionTree.innerHTML = `<p class="subtle">${t("scanning")}</p>`;
   try {
     const res = await fetch("/api/tree");
     const data = await res.json();
     if (!res.ok) {
-      throw new Error(data.error || "读取目录失败");
+      throw new Error(data.error || t("readDirFailed"));
     }
     state.tree = data;
-    el.rootPath.textContent = `扫描路径: ${data.openclawDir}`;
+    el.rootPath.textContent = t("scanPath", { path: data.openclawDir });
     el.sessionTree.innerHTML = "";
     el.sessionTree.appendChild(buildSidebar(data));
   } catch (error) {
-    el.sessionTree.innerHTML = `<p class="subtle">加载失败：${escapeHtml(error.message || String(error))}</p>`;
+    el.sessionTree.innerHTML = `<p class="subtle">${escapeHtml(t("loadFailedWithReason", { msg: error.message || String(error) }))}</p>`;
   }
 }
 
@@ -703,6 +877,10 @@ el.rawView.addEventListener("click", (event) => {
 el.fontSizeSelect.addEventListener("change", (event) => {
   applyFontSize(event.target.value);
 });
+el.languageSelect.addEventListener("change", (event) => {
+  applyLanguage(event.target.value);
+});
 
 loadFontSizePreference();
+applyLanguage(detectDefaultLanguage());
 loadTree();

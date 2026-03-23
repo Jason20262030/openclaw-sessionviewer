@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,7 +12,16 @@
         <div class="sidebar-top">
           <div class="sidebar-header">
             <h1>Session Viewer</h1>
-            <button id="refreshBtn" class="btn">刷新</button>
+            <div class="sidebar-actions">
+              <label class="font-size-control" for="languageSelect">
+                <span id="languageLabel">Language</span>
+                <select id="languageSelect">
+                  <option value="en" selected>English</option>
+                  <option value="zh-CN">简体中文</option>
+                </select>
+              </label>
+              <button id="refreshBtn" class="btn">Refresh</button>
+            </div>
           </div>
           <p id="rootPath" class="subtle"></p>
         </div>
@@ -22,32 +31,32 @@
       <main class="content">
         <header class="content-header">
           <div>
-            <h2 id="contentTitle">请选择左侧 Session 文件</h2>
+            <h2 id="contentTitle">Select a session file from the left panel</h2>
             <p id="contentMeta" class="subtle"></p>
           </div>
           <div class="view-mode">
             <label class="font-size-control" for="viewSelect">
-              视图
+              <span id="viewLabel">View</span>
               <select id="viewSelect">
-                <option value="session" selected>Session视图</option>
-                <option value="thinking">Thinking视图</option>
-                <option value="tree">树形视图</option>
-                <option value="raw">原始文本</option>
+                <option id="viewOptionSession" value="session" selected>Session View</option>
+                <option id="viewOptionThinking" value="thinking">Thinking View</option>
+                <option id="viewOptionTree" value="tree">Tree View</option>
+                <option id="viewOptionRaw" value="raw">Raw Text</option>
               </select>
             </label>
             <label class="font-size-control" for="fontSizeSelect">
-              字体
+              <span id="fontSizeLabel">Font</span>
               <select id="fontSizeSelect">
-                <option value="small">小</option>
-                <option value="medium" selected>中</option>
-                <option value="large">大</option>
+                <option id="fontSizeOptionSmall" value="small">Small</option>
+                <option id="fontSizeOptionMedium" value="medium" selected>Medium</option>
+                <option id="fontSizeOptionLarge" value="large">Large</option>
               </select>
             </label>
           </div>
         </header>
 
         <section id="notice" class="notice">
-          左侧自动按 agent 分组展示 sessions 文件，点击后可在右侧查看结构化内容和原始数据。
+          Session files are grouped by agent in the left panel. Click one to inspect structured content and raw text on the right.
         </section>
 
         <section id="sessionView" class="pane"></section>
